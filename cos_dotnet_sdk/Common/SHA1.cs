@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace QCloud.CosApi.Common
 {
-    class SHA1
+    internal class SHA1
     {
         public static string GetSHA1(string filePath)
         {

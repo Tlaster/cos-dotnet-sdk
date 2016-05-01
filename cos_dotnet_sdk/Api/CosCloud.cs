@@ -7,11 +7,12 @@ using System.Web;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
 namespace QCloud.CosApi.Api
 {
-    enum FolderPattern { File = 0, Folder, Both };
-    class CosCloud
+    public enum FolderPattern { File = 0, Folder, Both };
+    public class CosCloud
     {
         const string COSAPI_CGI_URL = "http://web.file.myqcloud.com/files/v1/";
         private int appId;
@@ -47,7 +48,7 @@ namespace QCloud.CosApi.Api
                 return remotePath;
             }
 		    var endWith = remotePath.EndsWith("/");
-            String[] part = remotePath.Split('/');
+            string[] part = remotePath.Split('/');
             remotePath = "";
             foreach(var s in part)
             {
@@ -89,11 +90,9 @@ namespace QCloud.CosApi.Api
         /// <param name="remotePath">远程文件夹路径</param>
         /// <param name="bizAttribute">更新信息</param>
         /// <returns></returns>
-        public string UpdateFolder(string bucketName, string remotePath, string bizAttribute)
-        {
-            remotePath = StandardizationRemotePath(remotePath);
-		    return UpdateFile(bucketName, remotePath, bizAttribute);
-	    }
+
+        public async Task<string> UpdateFolder(string bucketName, string remotePath, string bizAttribute)
+            => await UpdateFile(bucketName, StandardizationRemotePath(remotePath), bizAttribute);
 
         /// <summary>
         /// 更新文件信息
@@ -102,7 +101,7 @@ namespace QCloud.CosApi.Api
         /// <param name="remotePath">远程文件路径</param>
         /// <param name="bizAttribute">更新信息</param>
         /// <returns></returns>
-        public string UpdateFile(string bucketName, string remotePath, string bizAttribute)
+        public async Task<string> UpdateFile(string bucketName, string remotePath, string bizAttribute)
         {
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
@@ -112,7 +111,7 @@ namespace QCloud.CosApi.Api
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
             header.Add("Content-Type", "application/json");
-            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
+            return await httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
         /// <summary>
@@ -121,11 +120,8 @@ namespace QCloud.CosApi.Api
         /// <param name="bucketName">bucket名称</param>
         /// <param name="remotePath">远程文件夹路径</param>
         /// <returns></returns>
-        public string DeleteFolder(string bucketName, string remotePath)
-        {
-            remotePath = StandardizationRemotePath(remotePath);
-            return DeleteFile(bucketName, remotePath);
-        }
+        public async Task<string> DeleteFolder(string bucketName, string remotePath) 
+            => await DeleteFile(bucketName, StandardizationRemotePath(remotePath));
 
         /// <summary>
         /// 删除文件
@@ -133,7 +129,7 @@ namespace QCloud.CosApi.Api
         /// <param name="bucketName">bucket名称</param>
         /// <param name="remotePath">远程文件路径</param>
         /// <returns></returns>
-        public string DeleteFile(string bucketName, string remotePath)
+        public async Task<string> DeleteFile(string bucketName, string remotePath)
         {
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
@@ -142,8 +138,7 @@ namespace QCloud.CosApi.Api
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
             header.Add("Content-Type", "application/json");
-
-            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
+            return await httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
         /// <summary>
@@ -152,11 +147,8 @@ namespace QCloud.CosApi.Api
         /// <param name="bucketName">bucket名称</param>
         /// <param name="remotePath">远程文件夹路径</param>
         /// <returns></returns>
-        public string GetFolderStat(string bucketName, string remotePath)
-        {
-            remotePath = StandardizationRemotePath(remotePath);
-            return GetFileStat(bucketName, remotePath);
-        }
+        public async Task<string> GetFolderStat(string bucketName, string remotePath) 
+            => await GetFileStat(bucketName, StandardizationRemotePath(remotePath));
 
         /// <summary>
         /// 获取文件信息
@@ -164,7 +156,7 @@ namespace QCloud.CosApi.Api
         /// <param name="bucketName">bucket名称</param>
         /// <param name="remotePath">远程文件路径</param>
         /// <returns></returns>
-        public string GetFileStat(string bucketName, string remotePath)
+        public async Task<string> GetFileStat(string bucketName, string remotePath)
         {
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var data = new Dictionary<string, string>();
@@ -173,7 +165,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return httpRequest.SendRequest(url, data, HttpMethod.Get, header, timeOut);
+            return await httpRequest.SendRequest(url, data, HttpMethod.Get, header, timeOut);
         }
 
         /// <summary>
@@ -182,7 +174,7 @@ namespace QCloud.CosApi.Api
         /// <param name="bucketName">bucket名称</param>
         /// <param name="remotePath">远程文件夹路径</param>
         /// <returns></returns>
-        public string CreateFolder(string bucketName, string remotePath, string bizAttribute = "")
+        public async Task<string> CreateFolder(string bucketName, string remotePath, string bizAttribute = "")
         {
             remotePath = StandardizationRemotePath(remotePath);
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
@@ -194,7 +186,7 @@ namespace QCloud.CosApi.Api
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
             header.Add("Content-Type", "application/json");
-            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
+            return await httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
         /// <summary>
@@ -208,7 +200,7 @@ namespace QCloud.CosApi.Api
         /// <param name="pattern">拉取模式:只是文件，只是文件夹，全部</param>
         /// <param name="prefix">读取文件/文件夹前缀</param>
         /// <returns></returns>
-        public string GetFolderList(string bucketName, string remotePath, int num, string context, int order, FolderPattern pattern, string prefix = "")
+        public async Task<string> GetFolderList(string bucketName, string remotePath, int num, string context, int order, FolderPattern pattern, string prefix = "")
         {
             remotePath = StandardizationRemotePath(remotePath);
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath) + HttpUtility.UrlEncode(prefix);
@@ -223,7 +215,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return httpRequest.SendRequest(url, data, HttpMethod.Get, header, timeOut);
+            return await httpRequest.SendRequest(url, data, HttpMethod.Get, header, timeOut);
         }
 
         /// <summary>
@@ -233,7 +225,7 @@ namespace QCloud.CosApi.Api
         /// <param name="remotePath">远程文件路径</param>
         /// <param name="localPath">本地文件路径</param>
         /// <returns></returns>
-        public string UploadFile(string bucketName, string remotePath, string localPath)
+        public async Task<string> UploadFile(string bucketName, string remotePath, string localPath)
         {
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var sha1 = SHA1.GetSHA1(localPath);
@@ -244,7 +236,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath);
+            return await httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath);
         }
 
         /// <summary>
@@ -255,7 +247,7 @@ namespace QCloud.CosApi.Api
         /// <param name="localPath">本地文件路径</param>
         /// <param name="sliceSize">切片大小（字节）</param>
         /// <returns></returns>
-        public string SliceUploadFileFirstStep(string bucketName, string remotePath, string localPath, int sliceSize)
+        public async Task<string> SliceUploadFileFirstStep(string bucketName, string remotePath, string localPath, int sliceSize)
         {
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
             var sha1 = SHA1.GetSHA1(localPath);
@@ -269,7 +261,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
+            return await httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut);
         }
 
         /// <summary>
@@ -282,7 +274,7 @@ namespace QCloud.CosApi.Api
         /// <param name="offset">文件分片偏移量</param>
         /// <param name="sliceSize">切片大小（字节）</param>
         /// <returns></returns>
-        public string SliceUploadFileFollowStep(string bucketName, string remotePath, string localPath,
+        public async Task<string> SliceUploadFileFollowStep(string bucketName, string remotePath, string localPath,
             string sessionId, long offset, int sliceSize)
         {
             var url = COSAPI_CGI_URL + appId + "/" + bucketName + EncodeRemotePath(remotePath);
@@ -294,7 +286,7 @@ namespace QCloud.CosApi.Api
             var sign = Sign.Signature(appId, secretId, secretKey, expired, bucketName);
             var header = new Dictionary<string, string>();
             header.Add("Authorization", sign);
-            return httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath, offset, sliceSize);
+            return await httpRequest.SendRequest(url, data, HttpMethod.Post, header, timeOut, localPath, offset, sliceSize);
         }
 
         /// <summary>
@@ -305,41 +297,41 @@ namespace QCloud.CosApi.Api
         /// <param name="localPath">本地文件路径</param>
         /// <param name="sliceSize">切片大小（字节）,默认为512K</param>
         /// <returns></returns>
-        public string SliceUploadFile(string bucketName, string remotePath, string localPath, int sliceSize = 512 * 1024)
+        public async Task<string> SliceUploadFile(string bucketName, string remotePath, string localPath, int sliceSize = 512 * 1024)
         {
-            var result = SliceUploadFileFirstStep(bucketName, remotePath, localPath, sliceSize);
+            var result = await SliceUploadFileFirstStep(bucketName, remotePath, localPath, sliceSize);
             var obj = (JObject)JsonConvert.DeserializeObject(result);
             var code = (int)obj["code"];
-            if(code != 0)
+            if (code != 0)
             {
                 return result;
             }
             var data = obj["data"];
-            if(data["access_url"] != null)
+            if (data["access_url"] != null)
             {
                 var accessUrl = data["access_url"];
-                Console.WriteLine("命中秒传：" + accessUrl);
+                //Console.WriteLine("命中秒传：" + accessUrl);
                 return result;
             }
             else
             {
                 var sessionId = data["session"].ToString();
-                sliceSize = (int)data["slice_size"]; 
+                sliceSize = (int)data["slice_size"];
                 var offset = (long)data["offset"];
                 var retryCount = 0;
-                while(true)
+                while (true)
                 {
-                    result = SliceUploadFileFollowStep(bucketName, remotePath, localPath, sessionId, offset, sliceSize);
-                    Console.WriteLine(result);
+                    result = await SliceUploadFileFollowStep(bucketName, remotePath, localPath, sessionId, offset, sliceSize);
+                    //Console.WriteLine(result);
                     obj = (JObject)JsonConvert.DeserializeObject(result);
                     code = (int)obj["code"];
-                    if(code != 0)
+                    if (code != 0)
                     {
                         //当上传失败后会重试3次
-                        if(retryCount < 3)
+                        if (retryCount < 3)
                         {
                             retryCount++;
-                            Console.WriteLine("重试....");
+                            //Console.WriteLine("重试....");
                         }
                         else
                         {
@@ -349,7 +341,7 @@ namespace QCloud.CosApi.Api
                     else
                     {
                         data = obj["data"];
-                        if(data["offset"] != null)
+                        if (data["offset"] != null)
                         {
                             offset = (long)data["offset"] + sliceSize;
                         }
@@ -361,7 +353,7 @@ namespace QCloud.CosApi.Api
                 }
             }
             return "";
-	    }
+        }
     }
 
 

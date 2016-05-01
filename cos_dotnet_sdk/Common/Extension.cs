@@ -5,7 +5,7 @@ using System.Text;
 
 namespace QCloud.CosApi.Common
 {
-    public static class Extension
+    internal static class Extension
     {
         public static long ToUnixTime(this DateTime nowTime)
         {

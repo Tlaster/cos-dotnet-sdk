@@ -1,0 +1,8 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+/cos_dotnet_sdk/obj/x86
+/cos_dotnet_sdk/bin
+/.vs/cos_dotnet_sdk/v14
+/packages/Newtonsoft.Json.8.0.3

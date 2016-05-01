@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace QCloud.CosApi.Common
 {
-    public class Sign
+    internal class Sign
     {
         private static string Signature(int appId, string secretId, string secretKey, long expired, string fileId, string bucketName)
         {
@@ -16,7 +16,7 @@ namespace QCloud.CosApi.Common
             }
             var now = DateTime.Now.ToUnixTime() / 1000;
             var rand = new Random();
-            var rdm = rand.Next(Int32.MaxValue);
+            var rdm = rand.Next(int.MaxValue);
             var plainText = "a=" + appId + "&k=" + secretId + "&e=" + expired + "&t=" + now + "&r=" + rdm + "&f=" + fileId + "&b=" + bucketName;
 
             using (HMACSHA1 mac = new HMACSHA1(Encoding.UTF8.GetBytes(secretKey)))
@@ -31,9 +31,7 @@ namespace QCloud.CosApi.Common
         }
 
         public static string Signature(int appId, string secretId, string secretKey, long expired, string bucketName)
-        {
-            return Signature(appId, secretId, secretKey, expired, "", bucketName);
-        }
+            => Signature(appId, secretId, secretKey, expired, "", bucketName);
 
         public static string SignatureOnce(int appId, string secretId, string secretKey, string remotePath, string bucketName)
         {

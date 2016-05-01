@@ -31,7 +31,7 @@ namespace QCloud.CosApi
                 //result = cos.GetFolderStat(bucketName, "/sdk/");
                 //result = cos.DeleteFile(bucketName, "/sdk/xx.txt");
                 //result = cos.DeleteFolder(bucketName, "/sdk/");
-                result = cos.SliceUploadFile(bucketName, "/红警II共和国之辉(简体中文版).rar", "F:\\红警II共和国之辉(简体中文版).rar", 512 * 1024);
+                //result = cos.SliceUploadFile(bucketName, "/红警II共和国之辉(简体中文版).rar", "F:\\红警II共和国之辉(简体中文版).rar", 512 * 1024);
                 var end = DateTime.Now.ToUnixTime();
                 Console.WriteLine(result);
                 Console.WriteLine("总用时：" + (end - start) + "毫秒");
